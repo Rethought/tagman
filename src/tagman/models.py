@@ -35,7 +35,7 @@ return non-system tags only."""
         return super(TagManager, self).get_query_set().exclude(group__system = not self.system_tags)
 
 class Tag(models.Model):
-    name = models.CharField(verbose_name='Name', max_length=100, unique=True)
+    name = models.CharField(verbose_name='Name', max_length=100)
     slug = models.SlugField(max_length=100, default="")
     group = models.ForeignKey(TagGroup, verbose_name='Group', blank=True, null=True)
 
@@ -125,13 +125,11 @@ class TaggedItem(models.Model):
 
     def add_tag_str(self, string):
         group_name, tag_name = string.strip().split(TAG_SEPARATOR)
-        tag = Tag.all_objects.get_or_create(name=tag_name)[0]
         group = TagGroup.objects.get_or_create(name=group_name)[0]
-        if tag and group:
-            tag.save()
-            group.save()
-            self.tags.add(tag)
-            group.tag_set.add(tag)
+        group.save()
+        tag = Tag.objects.get_or_create(name=tag_name,group=group)[0]
+        tag.save()
+        self.tags.add(tag)
 
     def all_tag_groups(self):
         """ Return all set of unique tag groups of tags associated with this 
