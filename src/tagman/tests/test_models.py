@@ -7,12 +7,12 @@ from tagman.tests.models import TestItem
 class TestTags(TestCase):
 
     def setUp(self):
-        self.tag1 = Tag(name="test-tag1")
-        self.tag1.save()
-        self.tag2 = Tag(name="test-tag2")
-        self.tag2.save()
         self.group = TagGroup(name="test-group")
         self.group.save()
+        self.tag1 = Tag(group=self.group, name="test-tag1")
+        self.tag1.save()
+        self.tag2 = Tag(group=self.group, name="test-tag2")
+        self.tag2.save()
         self.item = TestItem(name="test-item")
         self.item.save()
         self.tags = [self.tag1, self.tag2]
@@ -38,7 +38,7 @@ class TestTags(TestCase):
     def test_unique_tag_in_group(self):
 
         self.group.tag_set.add(self.tag1)
-        tag2 = Tag(name=self.tag1.name)
+        tag2 = Tag(group=self.group, name=self.tag1.name)
         self.assertRaises(IntegrityError, self.group.tag_set.add, tag2)
 
     def test_get_tagged_items(self):
@@ -68,7 +68,7 @@ class TestTags(TestCase):
 
     def test_add_tag_str(self):
 
-        [self.item.add_tag_str("%s:%s" % (self.group, tag)) for tag in self.tags]
+        [self.item.add_tag_str("%s:%s" % (self.group.name, tag.name)) for tag in self.tags]
         self.assertTrue([tag for tag in self.item.tags.all() if tag in self.tags])
 
 

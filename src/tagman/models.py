@@ -37,7 +37,7 @@ return non-system tags only."""
 class Tag(models.Model):
     name = models.CharField(verbose_name='Name', max_length=100)
     slug = models.SlugField(max_length=100, default="")
-    group = models.ForeignKey(TagGroup, verbose_name='Group', blank=True, null=True)
+    group = models.ForeignKey(TagGroup, verbose_name='Group')
 
     objects = TagManager(sys=False)
     sys_objects = TagManager(sys=True)
@@ -50,7 +50,7 @@ class Tag(models.Model):
         super(Tag, self).save(*args, **kwargs)
 
     class Meta:
-        unique_together = ("id", "group",)
+        unique_together = ("name", "group",)
 
     def __unicode__(self):
         return "%s%s" % (str(self.group) + TAG_SEPARATOR if self.group else "", self.name)
