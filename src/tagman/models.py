@@ -53,7 +53,10 @@ class Tag(models.Model):
         unique_together = ("name", "group",)
 
     def __unicode__(self):
-        return "%s%s" % (str(self.group) + TAG_SEPARATOR if self.group else "", self.name)
+        return "{0}{1}".format(str(self.group) + TAG_SEPARATOR if self.group else "", self.name)
+
+    def __repr__(self):
+        return "{0}{1}".format(str(self.group.slug) + TAG_SEPARATOR if self.group else "", self.slug)
 
     @property
     def system(self):
@@ -76,7 +79,7 @@ class Tag(models.Model):
             cls_name = model_name.lower()
 
         try:
-            _set = getattr(self, "%s_set" % cls_name)
+            _set = getattr(self, "{0}_set".format(cls_name))
         except AttributeError:
             return []
         return _set.all()
