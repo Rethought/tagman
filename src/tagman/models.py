@@ -1,7 +1,9 @@
+import logging
 from django.db import models
 from django.template.defaultfilters import slugify
 
 TAG_SEPARATOR = ":"
+logger = logging.getLogger('cms')
 
 class TagGroup(models.Model):
     name = models.CharField(verbose_name='Name', max_length=100, unique=True)
@@ -39,9 +41,9 @@ class Tag(models.Model):
     slug = models.SlugField(max_length=100, default="")
     group = models.ForeignKey(TagGroup, verbose_name='Group')
 
-    objects = TagManager(sys=False)
+    objects = models.Manager()
     sys_objects = TagManager(sys=True)
-    all_objects = models.Manager()
+    public_objects = TagManager(sys=False)
 
     def save(self, *args, **kwargs):
         """ assign slug if empty """
@@ -99,12 +101,33 @@ class Tag(models.Model):
         the tag instance. 
         @todo: handle the [TagGroup|Tag].DoesNotExist exceptions
         """
-        s = s.replace('*','') # representation of system group prefixed *
+        s = s.strip('* ') # representation of system group prefixed *
         groupname, tagname = s.split(TAG_SEPARATOR)
-        grp = TagGroup.objects.get(name = groupname)
-        tag = Tag.all_objects.get(name = tagname, group = grp)
+        try:
+            grp = TagGroup.objects.get(name = groupname)
+            tag = Tag.objects.get(name = tagname, group = grp)
+        except TagGroup.DoesNotExist:
+            raise Tag.DoesNotExist()
         return tag
 
+    @classmethod
+    def get_or_create(cls, group_name, tag_name, system=False):
+        """ Like get_or_create on a manager but driven by distinct strings
+and creates the TagGroup if required. """
+        group, _ = TagGroup.objects.get_or_create(name=group_name, system=system)
+        tag, created = Tag.objects.get_or_create(name=tag_name, slug=slugify(tag_name), group=group)
+        if created:
+            logger.debug("Created tag via get_or_create with repr {0} and ID {1}".format(repr(tag), tag.id))
+        return tag
+
+    @classmethod
+    def get_or_create_tag_for_string(cls, s):
+        """ Given a tag representation as "[*]GRP:NAME", return the
+tag instance. """
+        group,name = s.strip('* ').split(':')
+        is_system = True if s.strip()[0]=='*' else False
+        return Tag.get_or_create(group, name, is_system)
+           
     @classmethod
     def tags_for_string(cls, s):
         """ Given a comma delimited list of tag string representations, e.g.::
@@ -121,20 +144,45 @@ class Tag(models.Model):
         return _tags
 
 class TaggedItem(models.Model):
-    tags = models.ManyToManyField(Tag, blank=True)
+    tags = models.ManyToManyField(Tag, related_name="%(class)s_set", blank=True)
+    auto_tags = models.ManyToManyField(Tag, related_name="%(class)s_auto_tagged_set", blank=True, editable=False)
 
     class Meta:
         abstract = True
 
-    def add_tag_str(self, string):
-        group_name, tag_name = string.strip().split(TAG_SEPARATOR)
-        group = TagGroup.objects.get_or_create(name=group_name)[0]
-        group.save()
-        tag = Tag.objects.get_or_create(name=tag_name,group=group)[0]
-        tag.save()
-        self.tags.add(tag)
+    def add_tag_str(self, string, auto_tag=False):
+        """ Create a tag from a string and add to tags.
+If auto_tag = True, return from the auto_tags list instead of tags """
+        tags = self.auto_tags if auto_tag else self.tags
+        tag = Tag.get_or_create_tag_for_string(string)
+        tags.add(tag)
+        return tag
 
-    def all_tag_groups(self):
+    def all_tag_groups(self, auto_tag=False):
         """ Return all set of unique tag groups of tags associated with this 
-        instance """
-        return set(tag.group for tag in self.tags.all())
+        instance. If auto_tag = True, return from the auto_tags list instead of tags """
+        tags = self.auto_tags if auto_tag else self.tags
+        return set(tag.group for tag in tags.all())
+
+class TaggedContentItem(TaggedItem):
+    """ Mixin for models that would have features such as auto-tagging
+enabled. """
+    class Meta:
+        abstract = True
+
+    def _make_self_tag_name(self):
+        return self.slug
+
+    def associate_auto_tags(self):
+        """ Automatically tag myself (by adding to auto_tags):
+ * <model name>:<slug>.
+
+ Overide _make_self_tag_name(self) to change the slug used.
+ """
+        tag_group = self.__class__.__name__
+        tag_name = self._make_self_tag_name()
+        tag = self.add_tag_str("*{0}:{1}".format(tag_group, tag_name), auto_tag=True)
+        logger.info("Auto tagging {0} with {1}".format(str(self), repr(tag)))
+        return tag
+
+

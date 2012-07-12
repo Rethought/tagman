@@ -2,13 +2,17 @@ from django.test import TestCase
 from django.db import IntegrityError
 
 from tagman.models import Tag, TagGroup
-from tagman.tests.models import TestItem
+from tagman.tests.models import TestItem, TCI
 
 class TestTags(TestCase):
 
     def setUp(self):
         self.group = TagGroup(name="test-group")
         self.group.save()
+        self.groupb = TagGroup(name="test-group-b")
+        self.groupb.save()
+        self.groupc = TagGroup(name="system-group", system=True)
+        self.groupc.save()
         self.tag1 = Tag(group=self.group, name="test-tag1")
         self.tag1.save()
         self.tag2 = Tag(group=self.group, name="test-tag2")
@@ -36,13 +40,24 @@ class TestTags(TestCase):
         self.assertTrue([tag for tag in self.group.tags_for_group() if tag in self.tags])
 
     def test_unique_tag_in_group(self):
+        tag1_clone = Tag(group=self.group, name=self.tag1.name)
+        self.assertRaises(IntegrityError, tag1_clone.save)
 
-        self.group.tag_set.add(self.tag1)
-        tag2 = Tag(group=self.group, name=self.tag1.name)
-        self.assertRaises(IntegrityError, self.group.tag_set.add, tag2)
+        # ... also test to see if we can make a tag with the same name as
+        # tag1 but a different group. This must now be allowed.
+        tag1_noclone = Tag(group=self.groupb, name=self.tag1.name)
+        try:
+            tag1_noclone.save()
+        except IntegrityError, ie:
+            self.fail("Unique constraint on group,name fails: {0}".format(str(ie)))
+
+    def test_unique_tag_in_system_group(self):
+        tag = Tag(group=self.groupc, name="foo")
+        tag.save()
+        tagb = Tag(group=self.groupc, name="foo")
+        self.assertRaises(IntegrityError, tagb.save)
 
     def test_get_tagged_items(self):
-
         self.item.tags.add(self.tag1)
         model_items = self.tag1.tagged_model_items(model_cls=self.item.__class__)
         self.assertTrue(self.item in model_items)
@@ -94,18 +109,18 @@ system tags."""
         self.systags = set([self.tag_a, self.tag_b])
         self.nonsystags = set([self.tag_c, self.tag_d])
 
-    def test_manager_default(self):
-        nonsystags = set(Tag.objects.all())
+    def test_manager_public(self):
+        nonsystags = set(Tag.public_objects.all())
         self.assertEquals(nonsystags, self.nonsystags)
 
     def test_manager_systags(self):
         systags = set(Tag.sys_objects.all())
         self.assertEquals(systags, self.systags)
 
-    def test_manager_alltags(self):
+    def test_manager_default(self):
         alltags = set(self.systags)
         alltags.update(self.nonsystags)
-        returnedtags = set(Tag.all_objects.all())
+        returnedtags = set(Tag.objects.all())
         self.assertEquals(alltags, returnedtags)
 
     def test_sysgroup_representations(self):
@@ -135,3 +150,17 @@ class TestSlugification(TestCase):
     def test_slug_values_b(self):
         self.assertEquals(self.tag_b.slug, "tag-b")
 
+
+class TestTaggedContentItem(TestCase):
+    def setUp(self):
+        self.tci = TCI()
+        self.tci.save()
+
+    def test_auto_tag_creation(self):
+        self.tci.associate_auto_tags()
+        at = self.tci.auto_tags.all()
+        self.assertEquals(len(at), 1)
+        tag = at[0]
+        self.assertEquals(tag.group.name, 'TCI')
+        self.assertEquals(tag.name, 'tci-slug')
+        self.assertEquals(tag.system, True)
