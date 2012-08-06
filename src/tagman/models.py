@@ -72,19 +72,27 @@ class Tag(models.Model):
         return [s[:-4] for s in dir(self) if s[-4:]=='_set']
 
     def tagged_model_items(self, model_cls=None, model_name=""):
-        """ Return list of instances of a given model, the class for which
+        """ Return a unique set of instances of a given model, the class for which
         is passed into model_cls OR the name for which is passed in model_name, 
         that are tagged with this tag"""
+        def _get_models_items(query_set):
+            try:
+                _set = getattr(self, query_set)
+            except AttributeError:
+                return set()
+            else:
+                return set(_set.all())
+
         if model_cls:
             cls_name = model_cls.__name__.lower()
         else:
             cls_name = model_name.lower()
 
-        try:
-            _set = getattr(self, "{0}_set".format(cls_name))
-        except AttributeError:
-            return []
-        return _set.all()
+        model_set = set()
+        model_set.update(_get_models_items("{0}_set".format(cls_name)))
+        model_set.update(_get_models_items("{0}_auto_tagged_set".format(cls_name)))
+
+        return list(model_set)
 
     def tagged_items(self):
         """ Return a dictionary, keyed on model name, with each value the 

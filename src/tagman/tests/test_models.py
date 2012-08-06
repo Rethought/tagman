@@ -62,6 +62,7 @@ class TestTags(TestCase):
         model_items = self.tag1.tagged_model_items(model_cls=self.item.__class__)
         self.assertTrue(self.item in model_items)
 
+
     def test_get_tag_for_string(self):
 
         self.group.tag_set.add(self.tag1)
@@ -164,3 +165,9 @@ class TestTaggedContentItem(TestCase):
         self.assertEquals(tag.group.name, 'TCI')
         self.assertEquals(tag.name, 'tci-slug')
         self.assertEquals(tag.system, True)
+
+    def test_get_auto_tagged_items(self):
+        self.tci.associate_auto_tags()
+        auto_tag = self.tci.auto_tags.all()[0]
+        tci_models = auto_tag.tagged_model_items(model_cls=self.tci.__class__)
+        self.assertTrue(self.tci in tci_models)
