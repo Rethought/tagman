@@ -81,7 +81,7 @@ class Tag(models.Model):
             except AttributeError:
                 return set()
             else:
-                return set(_set.all()[:limit] if limit else _set.all())
+                return set(_set.all()[:limit])
 
         if model_cls:
             cls_name = model_cls.__name__.lower()
