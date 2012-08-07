@@ -3,10 +3,10 @@ from setuptools import setup, find_packages
 
 setup(
     name = "tagman",
-    version = "0.1.4",
+    version = "0.1.5",
     author = "ReThought Ltd",
     author_email = "matthew@rethought-solutions.com",
-    url = "git@git.rethought-solutions.com:rtl/tagman",
+    url = "https://github.com/Rethought/tagman.git",
 
     packages = find_packages('src'),
     package_dir = {'':'src'},
