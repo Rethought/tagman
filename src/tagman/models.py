@@ -71,7 +71,7 @@ class Tag(models.Model):
         """
         return [s[:-4] for s in dir(self) if s[-4:]=='_set']
 
-    def tagged_model_items(self, model_cls=None, model_name=""):
+    def tagged_model_items(self, model_cls=None, model_name="", limit=None):
         """ Return a unique set of instances of a given model, the class for which
         is passed into model_cls OR the name for which is passed in model_name, 
         that are tagged with this tag"""
@@ -81,7 +81,7 @@ class Tag(models.Model):
             except AttributeError:
                 return set()
             else:
-                return set(_set.all())
+                return set(_set.all()[:limit])
 
         if model_cls:
             cls_name = model_cls.__name__.lower()
@@ -92,15 +92,15 @@ class Tag(models.Model):
         model_set.update(_get_models_items("{0}_set".format(cls_name)))
         model_set.update(_get_models_items("{0}_auto_tagged_set".format(cls_name)))
 
-        return list(model_set)
+        return model_set
 
-    def tagged_items(self):
+    def tagged_items(self, limit=None):
         """ Return a dictionary, keyed on model name, with each value the 
-        list of items of that model tagged with this tag. """
+        set of items of that model tagged with this tag. """
         models = self.models_for_tag()
         rdict = {}
         for model in models:
-            rdict[model] = self.tagged_model_items(model_name = model)
+            rdict[model] = self.tagged_model_items(model_name = model, limit=limit)
         return rdict
 
     @classmethod
