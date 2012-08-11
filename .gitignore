@@ -6,3 +6,5 @@ dist
 *egg-info*
 **htmlcov
 pep8.txt
+.coverage
+coverage.xml

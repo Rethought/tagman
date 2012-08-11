@@ -25,17 +25,10 @@ then
     mv ../md5.test_requirements.new ../md5.test_requirements.last
 fi
 
-# MOVE INTO SRC
-cd src
-find . -name "*.pyc" -exec rm {} \;
+find src -name "*.pyc" -exec rm {} \;
 coverage erase
-PYTHONPATH=. coverage run --omit "*venv*,*test*,*migrations*,test_settings.py,settings.py,manage.py" runtests.py  || echo "Test failed"
+PYTHONPATH=src coverage run --omit "*venv*,*test*,*migrations*,test_settings.py,settings.py,manage.py" src/runtests.py  || echo "Test failed"
 coverage xml
 coverage html
 echo "Checking for PEP-8 violations"
-pep8 --ignore=W293,E128,E501,E127 --exclude=migrations,manage.py,docs,assets,settings.py -r . > pep8.txt || echo "PEP-8 violations."
-
-# due to MP inability to get Jenkins to find the files here, let's move them
-# up one
-# (gave up on coverage... coburtura makes me scream...)
-mv pep8.txt ..
+pep8 --ignore=W293,E128,E501,E127 --exclude=migrations,manage.py,docs,assets,settings.py -r src > pep8.txt || echo "PEP-8 violations."
