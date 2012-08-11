@@ -7,7 +7,7 @@ def main():
     """Dynamically configure the Django settings with the
     minimum necessary to get Django running tests"""
     settings.configure(
-        INSTALLED_APPS=('tagman','django_nose'),
+        INSTALLED_APPS=('tagman', 'django_nose'),
         TEST_RUNNER = 'django_nose.NoseTestSuiteRunner',
         DATABASES={'default': {'ENGINE': 'django.db.backends.sqlite3',
                                'NAME': '/tmp/tagman.db',
