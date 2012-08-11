@@ -4,6 +4,7 @@ from django.db import IntegrityError
 from tagman.models import Tag, TagGroup
 from tagman.tests.models import TestItem, TCI
 
+
 class TestTags(TestCase):
 
     def setUp(self):
@@ -22,22 +23,20 @@ class TestTags(TestCase):
         self.tags = [self.tag1, self.tag2]
 
     def test_create_tag(self):
-
         self.assertIsNotNone(self.tag1.pk)
 
     def test_create_group(self):
-
         self.assertIsNotNone(self.group.pk)
 
     def test_add_tag_to_item(self):
-
         [self.item.tags.add(tag) for tag in self.tags]
-        self.assertTrue([tag for tag in self.item.tags.all() if tag in self.tags])
+        self.assertTrue([tag for tag in self.item.tags.all()
+                        if tag in self.tags])
 
     def test_tags_in_group(self):
-
         [self.group.tag_set.add(tag) for tag in self.tags]
-        self.assertTrue([tag for tag in self.group.tags_for_group() if tag in self.tags])
+        self.assertTrue([tag for tag in self.group.tags_for_group()
+                         if tag in self.tags])
 
     def test_unique_tag_in_group(self):
         tag1_clone = Tag(group=self.group, name=self.tag1.name)
@@ -49,7 +48,8 @@ class TestTags(TestCase):
         try:
             tag1_noclone.save()
         except IntegrityError, ie:
-            self.fail("Unique constraint on group,name fails: {0}".format(str(ie)))
+            self.fail("Unique constraint on group,name fails: {0}"
+                      .format(str(ie)))
 
     def test_unique_tag_in_system_group(self):
         tag = Tag(group=self.groupc, name="foo")
@@ -59,53 +59,54 @@ class TestTags(TestCase):
 
     def test_get_tagged_items(self):
         self.item.tags.add(self.tag1)
-        model_items = self.tag1.tagged_model_items(model_cls=self.item.__class__)
+        model_items =\
+            self.tag1.tagged_model_items(model_cls=self.item.__class__)
         self.assertTrue(self.item in model_items)
 
-
     def test_get_tag_for_string(self):
-
         self.group.tag_set.add(self.tag1)
         self.assertTrue(self.tag1 == Tag.tag_for_string(str(self.tag1)))
 
     def test_get_tags_for_string(self):
-
         string = ""
         for idx, tag in enumerate(self.tags):
             self.group.tag_set.add(tag)
-            string += "%s%s" % (str(tag), "," if idx+1 is not len(self.tags) else "")
-        self.assertTrue([tag for tag in Tag.tags_for_string(string) if tag in self.tags])
+            string += "%s%s" % (str(tag), ","
+                      if idx + 1 is not len(self.tags) else "")
+        self.assertTrue([tag for tag in Tag.tags_for_string(string)
+                         if tag in self.tags])
 
     def test_get_all_tag_groups(self):
-
         [self.item.tags.add(tag) for tag in self.tags]
         [self.group.tag_set.add(tag) for tag in self.tags]
-        self.assertTrue([group for group in self.item.all_tag_groups() if group == self.group])
+        self.assertTrue([group for group in self.item.all_tag_groups()
+                         if group == self.group])
 
     def test_add_tag_str(self):
-
-        [self.item.add_tag_str("%s:%s" % (self.group.name, tag.name)) for tag in self.tags]
-        self.assertTrue([tag for tag in self.item.tags.all() if tag in self.tags])
-
+        [self.item.add_tag_str("%s:%s" % (self.group.name, tag.name))
+         for tag in self.tags]
+        self.assertTrue([tag for tag in self.item.tags.all()
+                         if tag in self.tags])
 
 
 class TestSystemTags(TestCase):
-    """ System tags are designed not to appear in most UI - they are auto-added by models
-so that they can be searched on and have other functionality. A custom manager on the Tag
-prevents these appearing in e.g. admin for users when tagging items. But other managers allow
-access to the whole world of tags. Here we test these managers, as well as the rendering of
-system tags."""
+    """ System tags are designed not to appear in most UI - they are auto-added
+    by models so that they can be searched on and have other functionality.
+    A custom manager on the Tag prevents these appearing in e.g. admin for
+    users when tagging items. But other managers allow access to the whole
+    world of tags. Here we test these managers, as well as the rendering of
+    system tags."""
     def setUp(self):
         self.sys_group = TagGroup(name="system_group", system=True)
         self.sys_group.save()
         self.nonsys_group = TagGroup(name="normal_group", system=False)
         self.nonsys_group.save()
 
-        self.tag_a = Tag(group = self.sys_group, name="tag_a")
-        self.tag_b = Tag(group = self.sys_group, name="tag_b")
-        self.tag_c = Tag(group = self.nonsys_group, name="tag_c")
-        self.tag_d = Tag(group = self.nonsys_group, name="tag_d")
-        [getattr(self, "tag_%s"%x).save() for x in "abcd"]
+        self.tag_a = Tag(group=self.sys_group, name="tag_a")
+        self.tag_b = Tag(group=self.sys_group, name="tag_b")
+        self.tag_c = Tag(group=self.nonsys_group, name="tag_c")
+        self.tag_d = Tag(group=self.nonsys_group, name="tag_d")
+        [getattr(self, "tag_%s" % x).save() for x in "abcd"]
 
         self.systags = set([self.tag_a, self.tag_b])
         self.nonsystags = set([self.tag_c, self.tag_d])
@@ -140,14 +141,14 @@ class TestSlugification(TestCase):
         self.group = TagGroup(name="normal group", system=False)
         self.group.save()
 
-        self.tag_a = Tag(group = self.group, name="tag a")
-        self.tag_b = Tag(group = self.group, name="TAG b")
+        self.tag_a = Tag(group=self.group, name="tag a")
+        self.tag_b = Tag(group=self.group, name="TAG b")
         self.tag_a.save()
         self.tag_b.save()
 
     def test_slug_values_a(self):
         self.assertEquals(self.tag_a.slug, "tag-a")
-        
+
     def test_slug_values_b(self):
         self.assertEquals(self.tag_b.slug, "tag-b")
 
