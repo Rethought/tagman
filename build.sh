@@ -38,4 +38,4 @@ pep8 --ignore=W293,E128,E501,E127 --exclude=migrations,manage.py,docs,assets,set
 # due to MP inability to get Jenkins to find the files here, let's move them
 # up one
 mv pep8.txt ..
-mv coverage.xml ..
+mv ../../builds/${BUILD_ID}/coverage.xml ..
