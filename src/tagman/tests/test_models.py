@@ -154,9 +154,26 @@ class TestSlugification(TestCase):
 
 
 class TestTaggedContentItem(TestCase):
+    """ Test the features of TaggedContentItem, anything that is tagged
+    in some way and which will automatically assign itself tags. """
     def setUp(self):
         self.tci = TCI()
         self.tci.save()
+        self.tci.associate_auto_tags()
+        self.tci.save()
+
+    def test_gen_tag_string(self):
+        tag_str = self.tci.self_tag_string
+        self.assertEquals(tag_str, '*TCI:tci-slug')
+
+    def test_make_self_tag_name(self):
+        name = self.tci._make_self_tag_name()
+        self.assertEquals(name, 'tci-slug')
+
+    def test_self_autotag(self):
+        """Test method which returns object's own unique auto tag"""
+        auto_tag = self.tci.self_auto_tag
+        self.assertEquals(auto_tag, Tag.objects.get(slug='tci-slug'))
 
     def test_auto_tag_creation(self):
         self.tci.associate_auto_tags()
@@ -172,3 +189,13 @@ class TestTaggedContentItem(TestCase):
         auto_tag = self.tci.auto_tags.all()[0]
         tci_models = auto_tag.tagged_model_items(model_cls=self.tci.__class__)
         self.assertTrue(self.tci in tci_models)
+
+    def test_get_tci_from_auto_tag(self):
+        """ Test the Tag.auto_tagged_model_items method by looking to retrieve
+        our TCI based on its auto-tag."""
+        auto_tag = Tag.objects.get(slug='tci-slug')
+        item_set = auto_tag.auto_tagged_model_items(model_cls=TCI)
+        self.assertEquals(len(item_set), 1)
+        self.assertEquals(item_set.pop(), self.tci)
+
+
