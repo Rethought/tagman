@@ -34,3 +34,8 @@ coverage xml
 coverage html
 echo "Checking for PEP-8 violations"
 pep8 --ignore=W293,E128,E501,E127 --exclude=migrations,manage.py,docs,assets,settings.py -r . > pep8.txt || echo "PEP-8 violations."
+
+# due to MP inability to get Jenkins to find the files here, let's move them
+# up one
+mv pep8.txt ..
+mv coverage.xml ..
