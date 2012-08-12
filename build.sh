@@ -27,7 +27,7 @@ fi
 
 find src -name "*.pyc" -exec rm {} \;
 coverage erase
-PYTHONPATH=src coverage run --omit "*venv*,*test*,*migrations*,test_settings.py,settings.py,manage.py" src/runtests.py  || echo "Test failed"
+PYTHONPATH=src coverage run --omit "*venv*,*migrations*,test_settings.py,settings.py,manage.py" src/runtests.py  || echo "Test failed"
 coverage xml
 coverage html
 echo "Checking for PEP-8 violations"
