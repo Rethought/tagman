@@ -14,13 +14,11 @@ def main():
                                'USER': '',
                                'PASSWORD': '',
                                'HOST': '',
-                               'PORT': ''}}
+                               'PORT': ''}},
+        NOSE_ARGS=['--with-xunit', '-s'],
     )
 
-    # Fire off the tests
-    # not getting --with-xunit passed... this is a shame :(
-    kwargs = {'with-xunit': ""}
-    call_command('test', 'tagman', **kwargs)
+    call_command('test', 'tagman')
 
 if __name__ == '__main__':
     main()
