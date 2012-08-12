@@ -8,3 +8,4 @@ dist
 pep8.txt
 .coverage
 coverage.xml
+nosetests.xml

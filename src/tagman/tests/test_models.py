@@ -197,5 +197,3 @@ class TestTaggedContentItem(TestCase):
         item_set = auto_tag.auto_tagged_model_items(model_cls=TCI)
         self.assertEquals(len(item_set), 1)
         self.assertEquals(item_set.pop(), self.tci)
-
-

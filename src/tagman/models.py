@@ -111,7 +111,7 @@ class Tag(models.Model):
     def auto_tagged_model_items(self, model_cls=None, model_name="",
                                 limit=None):
         """Convenience method to return all auto-tagged instances for class
-        and tag. See tagged_model_items which this calls with 
+        and tag. See tagged_model_items which this calls with
         only_auto=True"""
         return self.tagged_model_items(model_cls, model_name, limit,
                                        only_auto=True)
