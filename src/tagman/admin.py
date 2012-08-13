@@ -1,20 +1,21 @@
+"""Tagman admin classes and also helpers/mixins for users of Tagman"""
 from django.contrib import admin
 from tagman.models import TagGroup
 from tagman.models import Tag
 from django import forms
 
-### ADMIN HELPERS 
+
 class TaggedContentItemForm(forms.ModelForm):
     """ Form for use on model admins that have a 'tags' field in which you want
-a nice filtered list without system tags polluting it. Typical for all TaggedContentItem
-models. """
+    a nice filtered list without system tags polluting it. Typical for all
+    TaggedContentItem models. """
     def __init__(self, *args, **kwargs):
-        """ Find all fields in a page ending in 'tags', assume that they are a 
-tags M2M and reset the widget's choices to a filtered list that excludes 
-system tags. """
+        """ Find all fields in a page ending in 'tags', assume that they are a
+        tags M2M and reset the widget's choices to a filtered list that
+        excludes system tags. """
         super(TaggedContentItemForm, self).__init__(*args, **kwargs)
-        wtf = Tag.objects.filter(group__system = False);
-        wlist = [w for t,w in self.fields.items() if t.endswith("tags")]
+        wtf = Tag.objects.filter(group__system=False)
+        wlist = [w for t, w in self.fields.items() if t.endswith("tags")]
         choices = []
         for choice in wtf:
             choices.append((choice.id, str(choice)))
@@ -22,23 +23,23 @@ system tags. """
 
 
 class TaggedContentAdminMixin(object):
-    """ When this is the first in the list of base classes, will
-ensure your 'tags' are filtered. """
+    """ When this is the first in the list of base classes, will ensure your
+    'tags' are filtered. """
     form = TaggedContentItemForm
 
-### END ADMIN HELPERS
-        
+
 class TagGroupAdmin(admin.ModelAdmin):
     list_display = ["name", "slug", "system"]
-    search_fields = ["name",]
-    list_filter = ["system",]
-    prepopulated_fields = {"slug": ("name",),}
+    search_fields = ["name"]
+    list_filter = ["system"]
+    prepopulated_fields = {"slug": ("name",)}
+
 
 class TagAdmin(admin.ModelAdmin):
     list_display = ["name", "slug", "group", "system"]
-    search_fields = ["name",]
-    list_filter = ["group",]
-    prepopulated_fields = {"slug": ("name",),}
+    search_fields = ["name"]
+    list_filter = ["group"]
+    prepopulated_fields = {"slug": ("name",)}
 
     def system(self, _object):
         return _object.system
@@ -50,7 +51,8 @@ class TagAdmin(admin.ModelAdmin):
         qs = self.model.objects.get_query_set()
 
         # we need this from the superclass method
-        ordering = self.ordering or () # otherwise we might try to *None, which is bad ;)
+        # otherwise we might try to *None, which is bad ;)
+        ordering = self.ordering or ()
         if ordering:
             qs = qs.order_by(*ordering)
         return qs
@@ -60,4 +62,3 @@ try:
     admin.site.register(TagGroup, TagGroupAdmin)
 except admin.sites.AlreadyRegistered:
     pass
-    
