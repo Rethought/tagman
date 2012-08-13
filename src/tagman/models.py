@@ -80,10 +80,13 @@ class Tag(models.Model):
         """
         return [s[:-4] for s in dir(self) if s[-4:] == '_set']
 
-    def tagged_model_items(self, model_cls=None, model_name="", limit=None):
+    def tagged_model_items(self, model_cls=None, model_name="", limit=None,
+                           only_auto=False):
         """ Return a unique set of instances of a given model, the class for
         which is passed into model_cls OR the name for which is passed in
-        model_name, that are tagged with this tag"""
+        model_name, that are tagged with this tag.
+        
+        If `only_auto`==True then return only auto-tagged instances."""
         def _get_models_items(query_set):
             try:
                 _set = getattr(self, query_set)
@@ -98,11 +101,20 @@ class Tag(models.Model):
             cls_name = model_name.lower()
 
         model_set = set()
-        model_set.update(_get_models_items("{0}_set".format(cls_name)))
+        if not only_auto:
+            model_set.update(_get_models_items("{0}_set".format(cls_name)))
         model_set.update(_get_models_items("{0}_auto_tagged_set"
                                            .format(cls_name)))
 
         return model_set
+
+    def auto_tagged_model_items(self, model_cls=None, model_name="",
+                                limit=None):
+        """Convenience method to return all auto-tagged instances for class
+        and tag. See tagged_model_items which this calls with
+        only_auto=True"""
+        return self.tagged_model_items(model_cls, model_name, limit,
+                                       only_auto=True)
 
     def tagged_items(self, limit=None):
         """ Return a dictionary, keyed on model name, with each value the
@@ -200,17 +212,32 @@ class TaggedContentItem(TaggedItem):
         abstract = True
 
     def _make_self_tag_name(self):
+        """Override this in concrete class to change the slug used, for example
+        if the slug field is not called `slug`"""
         return self.slug
+
+    @property
+    def self_tag_string(self):
+        """Generate the string representation for the auto tag that this
+        should be assigned. e.g. return `*<classname>:<tag name>`"""
+        tag_group = self.__class__.__name__
+        tag_name = self._make_self_tag_name()
+        return "*{0}:{1}".format(tag_group, tag_name)
+
+    @property
+    def self_auto_tag(self):
+        """Return the tag instance that is this object's own auto tag"""
+        tag_str = self.self_tag_string
+        my_tag = [t for t in self.auto_tags.all() if str(t) == tag_str]
+        if not my_tag:
+            raise Exception("{0} has yet to be auto-tagged".format(self))
+        return my_tag[0]
 
     def associate_auto_tags(self):
         """ Automatically tag myself (by adding to auto_tags):
- * <model name>:<slug>.
+        *<model name>:<slug>.
 
- Overide _make_self_tag_name(self) to change the slug used.
- """
-        tag_group = self.__class__.__name__
-        tag_name = self._make_self_tag_name()
-        tag = self.add_tag_str("*{0}:{1}".format(tag_group, tag_name),
-                               auto_tag=True)
+        Override _make_self_tag_name(self) to change the slug used."""
+        tag = self.add_tag_str(self.self_tag_string, auto_tag=True)
         logger.info("Auto tagging {0} with {1}".format(str(self), repr(tag)))
         return tag
