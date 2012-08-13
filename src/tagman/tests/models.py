@@ -1,11 +1,10 @@
-
 from django.db import models
 
 from tagman.models import TaggedItem
 from tagman.models import TaggedContentItem
 
-class TestItem(TaggedItem):
 
+class TestItem(TaggedItem):
     name = models.CharField(max_length=100, default="test")
 
     class Meta:
@@ -16,8 +15,7 @@ class TestItem(TaggedItem):
 
 
 class TCI(TaggedContentItem):
-
     class Meta:
         app_label = "tagman"
 
-    slug = "tci-slug" 
+    slug = "tci-slug"
