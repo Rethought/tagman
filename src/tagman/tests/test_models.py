@@ -57,7 +57,7 @@ class TestTags(TestCase):
         tagb = Tag(group=self.groupc, name="foo")
         self.assertRaises(IntegrityError, tagb.save)
 
-    def test_get_tagged_items(self):
+    def test_get_tagged_model_items(self):
         self.item.tags.add(self.tag1)
         model_items =\
             self.tag1.tagged_model_items(model_cls=self.item.__class__)
