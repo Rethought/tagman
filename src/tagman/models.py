@@ -117,7 +117,7 @@ class Tag(models.Model):
         return self.tagged_model_items(model_cls, model_name, limit,
                                        only_auto=True)
 
-    def tagged_items(self, limit=None, ignore_models=[]):
+    def tagged_items(self, limit=None, only_auto=False, ignore_models=[]):
         """ Return a dictionary, keyed on model name, with each value the
         set of items of that model tagged with this tag."""
         models = self.models_for_tag()
@@ -125,6 +125,7 @@ class Tag(models.Model):
         for model in models:
             if model not in ignore_models:
                 rdict[model] = self.tagged_model_items(model_name=model,
+                                                       only_auto=only_auto,
                                                        limit=limit)
         return rdict
 
