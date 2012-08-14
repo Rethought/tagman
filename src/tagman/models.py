@@ -10,7 +10,8 @@ class TagGroup(models.Model):
     name = models.CharField(verbose_name='Name', max_length=100, unique=True)
     slug = models.SlugField(max_length=100, default="")
     system = models.BooleanField(default=False,
-                                 help_text="Set True for system groups that should not appear for general use")
+                                 help_text="Set True for system groups that "
+                                           "should not appear for general use")
 
     def __unicode__(self):
         prefix = "*" if self.system else ""
@@ -85,7 +86,7 @@ class Tag(models.Model):
         """ Return a unique set of instances of a given model, the class for
         which is passed into model_cls OR the name for which is passed in
         model_name, that are tagged with this tag.
-        
+
         If `only_auto`==True then return only auto-tagged instances."""
         def _get_models_items(query_set):
             try:
@@ -116,14 +117,15 @@ class Tag(models.Model):
         return self.tagged_model_items(model_cls, model_name, limit,
                                        only_auto=True)
 
-    def tagged_items(self, limit=None):
+    def tagged_items(self, limit=None, ignore_models=[]):
         """ Return a dictionary, keyed on model name, with each value the
         set of items of that model tagged with this tag."""
         models = self.models_for_tag()
         rdict = {}
         for model in models:
-            rdict[model] = self.tagged_model_items(model_name=model,
-                                                   limit=limit)
+            if model not in ignore_models:
+                rdict[model] = self.tagged_model_items(model_name=model,
+                                                       limit=limit)
         return rdict
 
     @classmethod
