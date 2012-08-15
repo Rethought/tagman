@@ -10,7 +10,8 @@ class TagGroup(models.Model):
     name = models.CharField(verbose_name='Name', max_length=100, unique=True)
     slug = models.SlugField(max_length=100, default="")
     system = models.BooleanField(default=False,
-                                 help_text="Set True for system groups that should not appear for general use")
+                                 help_text="Set True for system groups that "
+                                           "should not appear for general use")
 
     def __unicode__(self):
         prefix = "*" if self.system else ""
@@ -78,14 +79,23 @@ class Tag(models.Model):
         instances tagged with this tag.
         @todo: This is hacky. Can we do it more elegantly?
         """
-        return [s[:-4] for s in dir(self) if s[-4:] == '_set']
+        models = []
+        for attribute in dir(self):
+            if attribute[-4:] == '_set':
+                # we just want the model name, not the set name
+                model_name = attribute.split('_')[0]
+                #TODO: check if the list already contains the model name?
+                models.append(model_name)
+        # return the unique set of model names
+        #TODO: what is more efficent?
+        return set(models)
 
     def tagged_model_items(self, model_cls=None, model_name="", limit=None,
                            only_auto=False):
         """ Return a unique set of instances of a given model, the class for
         which is passed into model_cls OR the name for which is passed in
         model_name, that are tagged with this tag.
-        
+
         If `only_auto`==True then return only auto-tagged instances."""
         def _get_models_items(query_set):
             try:
@@ -116,14 +126,17 @@ class Tag(models.Model):
         return self.tagged_model_items(model_cls, model_name, limit,
                                        only_auto=True)
 
-    def tagged_items(self, limit=None):
+    def tagged_items(self, limit=None, only_auto=False, ignore_models=[]):
         """ Return a dictionary, keyed on model name, with each value the
         set of items of that model tagged with this tag."""
         models = self.models_for_tag()
+        ignore_models = [model.lower() for model in ignore_models]
         rdict = {}
         for model in models:
-            rdict[model] = self.tagged_model_items(model_name=model,
-                                                   limit=limit)
+            if model not in ignore_models:
+                rdict[model] = self.tagged_model_items(model_name=model,
+                                                       only_auto=only_auto,
+                                                       limit=limit)
         return rdict
 
     @classmethod

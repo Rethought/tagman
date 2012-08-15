@@ -2,7 +2,7 @@ from django.test import TestCase
 from django.db import IntegrityError
 
 from tagman.models import Tag, TagGroup
-from tagman.tests.models import TestItem, TCI
+from tagman.tests.models import TestItem, TCI, IgnoreTestItem
 
 
 class TestTags(TestCase):
@@ -57,7 +57,7 @@ class TestTags(TestCase):
         tagb = Tag(group=self.groupc, name="foo")
         self.assertRaises(IntegrityError, tagb.save)
 
-    def test_get_tagged_items(self):
+    def test_get_tagged_model_items(self):
         self.item.tags.add(self.tag1)
         model_items =\
             self.tag1.tagged_model_items(model_cls=self.item.__class__)
@@ -87,6 +87,23 @@ class TestTags(TestCase):
          for tag in self.tags]
         self.assertTrue([tag for tag in self.item.tags.all()
                          if tag in self.tags])
+
+    def test_get_tagged_items(self):
+        self.item.tags.add(self.tag1)
+        item_model_name = self.item.__class__.__name__.lower()
+        # Create a model that should be ignored
+        ignored_model = IgnoreTestItem(name="ignore_me")
+        ignored_model.save()
+        ignored_model.tags.add(self.tag1)
+        ignored_model_name = ignored_model.__class__.__name__.lower()
+        # first check the default call returns both
+        items = self.tag1.tagged_items()
+        self.assertTrue(self.item in items[item_model_name])
+        self.assertTrue(ignored_model in items[ignored_model_name])
+        # now ignore the model and check that its not returned
+        items = self.tag1.tagged_items(ignore_models=[ignored_model_name])
+        self.assertTrue(self.item in items[item_model_name])
+        self.assertTrue(ignored_model_name not in items.keys())
 
 
 class TestSystemTags(TestCase):
