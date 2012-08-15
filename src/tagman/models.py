@@ -79,7 +79,16 @@ class Tag(models.Model):
         instances tagged with this tag.
         @todo: This is hacky. Can we do it more elegantly?
         """
-        return [s[:-4] for s in dir(self) if s[-4:] == '_set']
+        models = []
+        for attribute in dir(self):
+            if attribute[-4:] == '_set':
+                # we just want the model name, not the set name
+                model_name = attribute.split('_')[0]
+                #TODO: check if the list already contains the model name?
+                models.append(model_name)
+        # return the unique set of model names
+        #TODO: what is more efficent?
+        return set(models)
 
     def tagged_model_items(self, model_cls=None, model_name="", limit=None,
                            only_auto=False):
@@ -121,6 +130,7 @@ class Tag(models.Model):
         """ Return a dictionary, keyed on model name, with each value the
         set of items of that model tagged with this tag."""
         models = self.models_for_tag()
+        ignore_models = [model.lower() for model in ignore_models]
         rdict = {}
         for model in models:
             if model not in ignore_models:
