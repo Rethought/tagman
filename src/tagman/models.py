@@ -1,4 +1,5 @@
-import logging, itertools
+import logging
+import itertools
 
 from django.db import models
 from django.core.exceptions import FieldError
