@@ -1,4 +1,6 @@
 import logging
+import itertools
+
 from django.db import models
 from django.core.exceptions import FieldError
 from django.template.defaultfilters import slugify
@@ -158,6 +160,21 @@ class Tag(models.Model):
                                                        filter_dict=filter_dict,
                                                        limit=limit)
         return rdict
+
+    def unique_item_set(self, limit=None, only_auto=False, ignore_models=[],
+                        filter_dict=None):
+        '''
+        Return the unique item set for a tag
+        '''
+        item_set = set()
+        tagged_items = self.tagged_items(limit=limit,
+                                         only_auto=only_auto,
+                                         filter_dict=filter_dict,
+                                         ignore_models=ignore_models)
+        # merge all tagged items into a unique set
+        item_set.update(itertools.chain(*tagged_items.values()))
+
+        return item_set
 
     @classmethod
     def tag_for_string(cls, s):
