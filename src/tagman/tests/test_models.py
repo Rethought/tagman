@@ -105,6 +105,15 @@ class TestTags(TestCase):
         self.assertTrue(self.item in items[item_model_name])
         self.assertTrue(ignored_model_name not in items.keys())
 
+    def test_get_unique_item_set(self):
+        self.item.tags.add(self.tag1)
+        item2 = TestItem(name="test-item-2")
+        self.item.save()
+        item2.tags.add(self.tag1)
+        items = self.tag1.unique_item_set()
+        self.assertTrue(self.item in items)
+        self.assertTrue(item2 in items)
+
 
 class TestSystemTags(TestCase):
     """ System tags are designed not to appear in most UI - they are auto-added
