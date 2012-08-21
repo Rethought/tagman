@@ -108,7 +108,7 @@ class TestTags(TestCase):
     def test_get_unique_item_set(self):
         self.item.tags.add(self.tag1)
         item2 = TestItem(name="test-item-2")
-        self.item.save()
+        item2.save()
         item2.tags.add(self.tag1)
         items = self.tag1.unique_item_set()
         self.assertTrue(self.item in items)
