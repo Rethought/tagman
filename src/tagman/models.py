@@ -1,4 +1,5 @@
-import logging
+import logging, itertools
+
 from django.db import models
 from django.core.exceptions import FieldError
 from django.template.defaultfilters import slugify
@@ -170,8 +171,7 @@ class Tag(models.Model):
                                          filter_dict=filter_dict,
                                          ignore_models=ignore_models)
         # merge all tagged items into a unique set
-        for model in tagged_items:
-            item_set.update(tagged_items[model])
+        item_set.update(itertools.chain(*tagged_items.values()))
 
         return item_set
 
