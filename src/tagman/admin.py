@@ -33,8 +33,8 @@ class TaggedContentItemForm(forms.ModelForm):
 
 class TaggedContentAdminMixin(object):
     """
-    When this is the first in the list of base classes, will ensure your
-    'tags' are filtered.
+    When this is the first in the list of base classes for the admin class
+    of a model that has tags it will ensure your 'tags' are filtered.
     """
     form = TaggedContentItemForm
 

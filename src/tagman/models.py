@@ -211,8 +211,10 @@ class Tag(models.Model):
 
     @classmethod
     def tag_for_string(cls, s):
-        """ Given a tag representation as "[*]GRP:NAME", return
+        """
+        Given a tag representation as "[*]GRP:NAME", return
         the tag instance.
+
         @todo: handle the [TagGroup|Tag].DoesNotExist exceptions
         """
         s = s.strip('* ')  # representation of system group prefixed *
@@ -226,8 +228,10 @@ class Tag(models.Model):
 
     @classmethod
     def get_or_create(cls, group_name, tag_name, system=False):
-        """ Like get_or_create on a manager but driven by distinct strings and
-        creates the TagGroup if required. """
+        """
+        Like get_or_create on a manager but driven by distinct strings and
+        creates the TagGroup if required.
+        """
         group, _ = TagGroup.objects.get_or_create(name=group_name,
                                                   system=system)
         tag, created = Tag.objects.get_or_create(name=tag_name,
@@ -241,15 +245,18 @@ class Tag(models.Model):
 
     @classmethod
     def get_or_create_tag_for_string(cls, s):
-        """ Given a tag representation as "[*]GRP:NAME", return the tag
-        instance. """
+        """
+        Given a tag representation as "[*]GRP:NAME", return the tag
+        instance.
+        """
         group, name = s.strip('* ').split(':')
         is_system = True if s.strip()[0] == '*' else False
         return Tag.get_or_create(group, name, is_system)
 
     @classmethod
     def tags_for_string(cls, s):
-        """ Given a comma delimited list of tag string representations, e.g.::
+        """
+        Given a comma delimited list of tag string representations, e.g.::
 
         <GRP>:<NAME>,<GRP>:<NAME2>...
 
@@ -291,35 +298,45 @@ class TaggedItem(models.Model):
         return tag
 
     def all_tag_groups(self, auto_tag=False):
-        """ Return all set of unique tag groups of tags associated with this
+        """
+        Return all set of unique tag groups of tags associated with this
         instance. If auto_tag = True, return from the auto_tags list instead
-        of tags """
+        of tags
+        """
         tags = self.auto_tags if auto_tag else self.tags
         return set(tag.group for tag in tags.all())
 
 
 class TaggedContentItem(TaggedItem):
-    """ Mixin for models that would have features such as auto-tagging
-    enabled. """
+    """
+    Mixin for models that would have features such as auto-tagging
+    enabled.
+    """
     class Meta:
         abstract = True
 
     def _make_self_tag_name(self):
-        """Override this in concrete class to change the slug used, for example
-        if the slug field is not called `slug`"""
+        """
+        Override this in concrete class to change the slug used, for example
+        if the slug field is not called `slug`
+        """
         return self.slug
 
     @property
     def self_tag_string(self):
-        """Generate the string representation for the auto tag that this
-        should be assigned. e.g. return `*<classname>:<tag name>`"""
+        """
+        Generate the string representation for the auto tag that this
+        should be assigned. e.g. return `*<classname>:<tag name>`
+        """
         tag_group = self.__class__.__name__
         tag_name = self._make_self_tag_name()
         return "*{0}:{1}".format(tag_group, tag_name)
 
     @property
     def self_auto_tag(self):
-        """Return the tag instance that is this object's own auto tag"""
+        """
+        Return the tag instance that is this object's own auto tag
+        """
         tag_str = self.self_tag_string
         my_tag = [t for t in self.auto_tags.all() if str(t) == tag_str]
         if not my_tag:
@@ -327,7 +344,8 @@ class TaggedContentItem(TaggedItem):
         return my_tag[0]
 
     def associate_auto_tags(self):
-        """ Automatically tag myself (by adding to auto_tags):
+        """
+        Automatically tag myself (by adding to auto_tags):
         *<model name>:<slug>.
 
         Override _make_self_tag_name(self) to change the slug used.
