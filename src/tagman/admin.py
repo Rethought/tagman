@@ -6,13 +6,22 @@ from django import forms
 
 
 class TaggedContentItemForm(forms.ModelForm):
-    """ Form for use on model admins that have a 'tags' field in which you want
+    """
+    Form for use on model admins that have a 'tags' field in which you want
     a nice filtered list without system tags polluting it. Typical for all
-    TaggedContentItem models. """
+    TaggedContentItem models.
+    """
     def __init__(self, *args, **kwargs):
-        """ Find all fields in a page ending in 'tags', assume that they are a
+        """
+        Find all fields in a page ending in 'tags', assume that they are a
         tags M2M and reset the widget's choices to a filtered list that
-        excludes system tags. """
+        excludes system tags.
+
+        This is very crude and rather inelegant but it solved a particular
+        problem. It is suggested this is used with care, or used as an
+        example of how to manage filtering if you'd like to do some such
+        in another way.
+        """
         super(TaggedContentItemForm, self).__init__(*args, **kwargs)
         wtf = Tag.objects.filter(group__system=False)
         wlist = [w for t, w in self.fields.items() if t.endswith("tags")]
@@ -23,8 +32,10 @@ class TaggedContentItemForm(forms.ModelForm):
 
 
 class TaggedContentAdminMixin(object):
-    """ When this is the first in the list of base classes, will ensure your
-    'tags' are filtered. """
+    """
+    When this is the first in the list of base classes, will ensure your
+    'tags' are filtered.
+    """
     form = TaggedContentItemForm
 
 
