@@ -20,7 +20,7 @@ logger = logging.getLogger()
 class TagGroup(models.Model):
     """
     A Tag Group is a logical grouping for tags; e.g. tag group 'flavour' could
-    have tags 'cinamon', 'beef' etc which would be distinguish from another
+    have tags 'cinnamon', 'beef' etc which would be distinguish from another
     tag also named 'beef' but in the category 'meat'.
     """
     name = models.CharField(verbose_name='Name', max_length=100, unique=True)
@@ -67,7 +67,7 @@ class TagManager(models.Manager):
 class Tag(models.Model):
     """
     A Tag has a name and is associated with a tag group. Thus we might
-    have flavour:cinamon where the tag is 'cinamon' and the tag group
+    have flavour:cinnamon where the tag is 'cinnamon' and the tag group
     is 'flavour'.
     """
     name = models.CharField(verbose_name='Name', max_length=100)

@@ -7,7 +7,7 @@ model.
 
 In trying to reconcile concepts of 'categorisation' and 'tagging' in certain
 projects we found that a qualified tag worked well. Thus a tag is not just
-'beef' or 'onion' it is 'meat:beaf' or 'flavour:beef'. A given model can thus
+'beef' or 'onion' it is 'meat:beef' or 'flavour:beef'. A given model can thus
 have many tags belonging to one or more groups and this can be useful in
 many cases.
 
