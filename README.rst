@@ -21,6 +21,29 @@ Functionality is also provided for 'system' tags that can be made not to appear
 in M2M widgets by default so users cannot add them directly to objects. They
 may be added automatically on the fly thus providing 'auto tagging'.
 
+Examples
+--------
+
+To have a model be taggable::
+
+ [models.py]
+
+ from tagman.models import TaggedContentItem
+
+ class MyTaggableModel(TaggedContentItem):
+     # carry on as you would; you now have a tags field
+     ...
+
+And for the admin to be nice you could do with using a
+`filter_horizontal` widget::
+
+ [admin.py]
+
+ class MytaggableModelAdmin(admin.ModelAdmiN):
+     ...
+     filter_horizontal = ('tags',)
+     ...
+
 Installation
 ------------
 
