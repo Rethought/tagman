@@ -116,12 +116,14 @@ class TestTags(TestCase):
 
 
 class TestSystemTags(TestCase):
-    """ System tags are designed not to appear in most UI - they are auto-added
+    """
+    System tags are designed not to appear in most UI - they are auto-added
     by models so that they can be searched on and have other functionality.
     A custom manager on the Tag prevents these appearing in e.g. admin for
     users when tagging items. But other managers allow access to the whole
     world of tags. Here we test these managers, as well as the rendering of
-    system tags."""
+    system tags.
+    """
     def setUp(self):
         self.sys_group = TagGroup(name="system_group", system=True)
         self.sys_group.save()
@@ -180,8 +182,10 @@ class TestSlugification(TestCase):
 
 
 class TestTaggedContentItem(TestCase):
-    """ Test the features of TaggedContentItem, anything that is tagged
-    in some way and which will automatically assign itself tags. """
+    """
+    Test the features of TaggedContentItem, anything that is tagged
+    in some way and which will automatically assign itself tags.
+    """
     def setUp(self):
         self.tci = TCI()
         self.tci.save()
@@ -217,8 +221,10 @@ class TestTaggedContentItem(TestCase):
         self.assertTrue(self.tci in tci_models)
 
     def test_get_tci_from_auto_tag(self):
-        """ Test the Tag.auto_tagged_model_items method by looking to retrieve
-        our TCI based on its auto-tag."""
+        """
+        Test the Tag.auto_tagged_model_items method by looking to retrieve
+        our TCI based on its auto-tag.
+        """
         auto_tag = Tag.objects.get(slug='tci-slug')
         item_set = auto_tag.auto_tagged_model_items(model_cls=TCI)
         self.assertEquals(len(item_set), 1)

@@ -5,7 +5,7 @@ setup(
     name = "tagman",
     version = "0.1.9",
     author = "ReThought Ltd",
-    author_email = "matthew@rethought-solutions.com",
+    author_email = "code@rethought-solutions.com",
     url = "https://github.com/Rethought/tagman.git",
 
     packages = find_packages('src'),
