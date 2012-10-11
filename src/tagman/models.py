@@ -73,6 +73,7 @@ class Tag(models.Model):
     name = models.CharField(verbose_name='Name', max_length=100)
     slug = models.SlugField(max_length=100, default="")
     group = models.ForeignKey(TagGroup, verbose_name='Group')
+    archived = models.BooleanField(default=False)
 
     objects = models.Manager()
     sys_objects = TagManager(sys=True)
@@ -98,6 +99,13 @@ class Tag(models.Model):
         return "{0}{1}".format(str(self.group.slug)
                                + TAG_SEPARATOR
                                if self.group else "", self.slug)
+
+    def archive(self):
+        """
+        Set the archive flag to implement soft-delete
+        """
+        self.archived=True
+        self.save()
 
     @property
     def system(self):
