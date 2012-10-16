@@ -51,6 +51,7 @@ class TagManager(models.Manager):
         """
         If sys == True, this will return only system tags. If False,
         the default, will return non-system tags only.
+        If archived == False, this will return only non-archived Tags.
         """
         super(TagManager, self).__init__()
         self.system_tags = sys
@@ -59,7 +60,7 @@ class TagManager(models.Manager):
     def get_query_set(self):
         """
         By default return only those objects that are not flagged as
-        'system' tags
+        'system' tags.
         """
         return super(TagManager, self).get_query_set()\
             .exclude(group__system=not self.system_tags).filter(archived=self.archived)
