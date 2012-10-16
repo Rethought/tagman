@@ -47,13 +47,14 @@ class TagGroup(models.Model):
 
 
 class TagManager(models.Manager):
-    def __init__(self, sys=False):
+    def __init__(self, sys=False, archived=True):
         """
         If sys == True, this will return only system tags. If False,
         the default, will return non-system tags only.
         """
         super(TagManager, self).__init__()
         self.system_tags = sys
+        self.archived = archived
 
     def get_query_set(self):
         """
@@ -61,7 +62,7 @@ class TagManager(models.Manager):
         'system' tags
         """
         return super(TagManager, self).get_query_set()\
-            .exclude(group__system=not self.system_tags)
+            .exclude(group__system=not self.system_tags).filter(archived=self.archived)
 
 
 class Tag(models.Model):
@@ -78,6 +79,7 @@ class Tag(models.Model):
     objects = models.Manager()
     sys_objects = TagManager(sys=True)
     public_objects = TagManager(sys=False)
+    non_archived = TagManager(sys=False, archived=False)
 
     def save(self, *args, **kwargs):
         """
