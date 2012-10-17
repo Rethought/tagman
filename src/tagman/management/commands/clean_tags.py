@@ -11,4 +11,4 @@ class Command(BaseCommand):
             archived_tags = Tag.objects.filter(archived=True)
             archived_tags.delete()
         except:
-            raise CommandError('does not exist')
+            raise CommandError('Exception while deleting tags: %s' % e.message)
